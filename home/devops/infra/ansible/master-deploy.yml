@@ -1,0 +1,30 @@
+---
+- name: Universal Dynamic Project Deployment
+  hosts: webservers
+  gather_facts: false
+
+  tasks:
+    - name: Load project specific variable mappings
+      include_vars: "{{ workspace_path }}/deployment/vars.yml"
+
+    - name: Ensure target application image is pulled from Docker Hub
+      community.docker.docker_image:
+        name: "{{ docker_hub_user }}/{{ app_name }}:{{ build_number }}"
+        source: pull
+
+    - name: Stop and clean old application container safely
+      community.docker.docker_container:
+        name: "{{ app_name }}_container"
+        state: absent
+
+    - name: Initialize and run new versioned app container
+      community.docker.docker_container:
+        name: "{{ app_name }}_container"
+        image: "{{ docker_hub_user }}/{{ app_name }}:{{ build_number }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ app_host_port }}:{{ app_container_port }}"
+        networks:
+          - name: jenkins-nginx-setup_internal_net
+

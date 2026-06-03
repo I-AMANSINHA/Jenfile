@@ -1,0 +1,21 @@
+Management Server
+/home/devops/infra/
+├── docker-compose.yml       # Controls Jenkins & NGINX reverse proxy infrastructure
+├── nginx.conf               # Master proxy configuration routing traffic to apps
+├── jenkins_home/            # Persistent Jenkins data (created automatically)
+└── ansible/                 # Centralised Ansible directory
+    ├── master-deploy.yml    # Reusable master deployment playbook
+    └── production_hosts.ini # Scalable server inventory list
+
+
+Git Repositories
+/home/devops/projects/todo-app/
+├── .env                     # Local configuration parameters (HIDDEN / NOT IN GIT)
+├── .gitignore               # Explicitly ignores the .env file
+├── Dockerfile               # Project-specific language runtime blueprint
+├── Jenkinsfile              # Pipeline template that reads .env dynamically
+├── src/                     # Your core application code directory
+│   └── index.html           # Front-end asset entry point (e.g., Todo app UI)
+└── deployment/
+    └── vars.yml             # Unique deployment ports and metadata for Ansible
+

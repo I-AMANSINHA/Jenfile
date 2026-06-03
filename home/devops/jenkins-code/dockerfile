@@ -1,0 +1,9 @@
+# Use a lightweight, secure web server image
+FROM nginx:alpine
+
+# Copy all your frontend project files into the NGINX web directory
+COPY src/ /usr/share/nginx/html/
+
+# Document that the app runs internally on port 80
+EXPOSE 80
+

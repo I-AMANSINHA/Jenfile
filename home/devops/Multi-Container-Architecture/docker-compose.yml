@@ -1,0 +1,62 @@
+#version: '3.8'
+
+networks:
+  dashboard-net:
+    driver: bridge
+
+  existing-infra-net:
+    external: true
+    name: infra_internal_net
+
+volumes:
+  postgres_data:
+
+services:
+  # 1. PostgreSQL Database Container
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: dashboard-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER} 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "9999:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - dashboard-net
+
+  # 2. Node.js Express Backend API Gateway
+  dashboard-backend:
+    build:
+      context: ./backend
+    container_name: dashboard-api
+    ports:
+      - "9998:5000"
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-db:9999/${POSTGRES_DB}
+      - JENKINS_URL=http://${JENKINS_CONTAINER_NAME} 
+      - JENKINS_USER=${JENKINS_USER}
+      - JENKINS_TOKEN=${JENKINS_TOKEN}
+      - JENKINS_JOB_TOKEN=${JENKINS_JOB_SECRET_TOKEN}
+    depends_on:
+      - postgres-db
+    networks:
+      - dashboard-net
+
+  # 3. React Frontend UI Client
+  dashboard-frontend:
+    build:
+      context: ./frontend
+    container_name: dashboard-ui
+    ports:
+      - "9900:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:9998
+    depends_on:
+      - dashboard-backend
+    networks:
+      - dashboard-net
+

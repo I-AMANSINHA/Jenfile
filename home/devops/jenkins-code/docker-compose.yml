@@ -1,0 +1,10 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "9091:8080" # Maps local port 9091 to Jenkins
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # CRITICAL: Passes the host Docker engine to Jenkins
+    user: root # CRITICAL: Gives Jenkins permission to read/write to that socket
+

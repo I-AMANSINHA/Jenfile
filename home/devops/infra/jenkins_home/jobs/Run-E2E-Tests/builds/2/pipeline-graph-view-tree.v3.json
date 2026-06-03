@@ -1,0 +1,1 @@
+{"stages":[{"id":"6","name":"Dummy Test Execution","children":[],"state":"success","type":"STAGE","title":"Dummy Test Execution","isSequential":false,"synthetic":false,"placeholder":false,"pauseDurationMillis":0,"totalDurationMillis":775,"startTimeMillis":1780340952130,"agent":"built-in","url":"/job/Run-E2E-Tests/2/stages/?selected-node=6"}],"complete":true}
