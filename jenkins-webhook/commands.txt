@@ -1,0 +1,70 @@
+### command and steps #####
+
+1. docker build --no-cache -t custom-jenkins:latest .
+
+
+2. docker run -d \
+  -p 8888:8080 \
+  -p 50000:50000 \
+  -v $(pwd)/jenkins_data:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  --name my-jenkins \
+  custom-jenkins:latest
+
+
+Note :- 50000: The Machine Automation Gateway. Reserved entirely for separate build server computers to talk to Jenkins.
+- The Network Tunnel: When an external build agent machine boots up, it initiates a secure, bi-directional network connection directly into your main Jenkins container over port 50000
+
+
+3. Install smee.io
+- npm install --global smee-client
+- If your application needs to respond to webhooks, you'll need some way to expose localhost to the internet. smee.io is a small service that uses Server-Sent Events to proxy payloads from the webhook source, then transmit them to your locally running application.
+
+4. smee --url https://smee.io --target http://localhost:8888/github-webhook/
+- smee --url https://smee.io/Xy2ricrsrJQgAdE2 --target http://localhost:8888/github-webhook/
+
+5. Add the URL to GitHubNow that the Smee pipe is open, you need to tell GitHub where to send the data.
+- Go to your repository on GitHub.com.
+- Click the Settings tab at the top.
+- Click Webhooks in the left menu, then click Add webhook.
+- Configure these fields:Payload URL: Paste your exact Smee link: https://smee.io/uniqueocde (Do not add /github-webhook/ here—just the raw Smee link).
+Content type: 
+- Select application/json.Which events?:
+- Choose Just the push event.
+- Click Add webhook. 
+- If your Jenkins is running on a local machine, GitHub cannot see it. You must temporarily expose it using a secure tunneling tool like ngrok & smee
+- 
+
+6. Configure Jenkins to Accept WebhooksFirst, ensure the necessary integration plugin is installed and ready inside your Jenkins dashboard.
+- Navigate to Manage Jenkins ➡️  Plugins ➡️  Available Plugins.
+- Search for GitHub Integration, select it, and click Install. (Restart Jenkins if prompted).
+- Open your pipeline project dashboard page and click Configure on the left menu.
+- Scroll down to the Build Triggers section.
+- Check the box for GitHub hook trigger for GITScm polling.
+
+7. Create the Project in Jenkins (Do this first)Go to your dashboard at http://localhost:8888.
+- Click New Item ➡️  Name it ➡️  Select Pipeline ➡️  Click OK.
+- Under Build Triggers, check GitHub hook trigger for GITScm polling.
+- Scroll to the Pipeline section at the bottom:Set Definition to Pipeline script from SCM.
+- Set SCM to Git.
+- Paste your GitHub Repository URL.
+- Set Script Path to Jenkinsfile.
+- Click Save.
+
+8. Create Repository on docker hub - flask-test-app
+
+9. Where to Type Your Credentials inside Jenkins 
+- On the left-hand sidebar menu, click on Manage Jenkins.
+- Scroll down to the Security section and click on Credentials.
+- Under the Stores scoped to Jenkins table, look for the (global) link under the Domains column and click it.
+- Click the blue Add Credentials button in the top-right corner.
+- Fill out the form with these exact settings: Kind: Select Username with password from the dropdown menu.
+- Scope: Keep it as Global.Username: 
+- Type your exact Docker Hub Username (do not use your email address).
+- Password: Paste your Docker Hub Password (or your Docker Hub Personal Access Token).
+- ID: Type exactly docker-hub-credentials-id. (This text must match the ID name written inside your Jenkinsfile environment block exactly, or the pipeline will fail).
+- Description: Enter a helpful label, like My Secure Docker Hub Token.
+- Click Create.
+
+10. always gave the user jenkins inside the container to root permission to execute or use "chmod 666 /var/run/docker.sock"
+
